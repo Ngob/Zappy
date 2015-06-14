@@ -1,0 +1,12 @@
+up IA
+--This line, and those below, will be ignored--
+
+A    ia/check_string.cpp
+A    ia/exept_connect.hpp
+M    ia/drone.cpp
+M    ia/client.cpp
+A    ia/check_string.hh
+M    ia/main.cpp
+A    ia/exept_read.hpp
+M    ia/s_case.cpp
+M    Makefile

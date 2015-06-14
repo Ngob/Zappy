@@ -1,0 +1,204 @@
+//
+// client.cpp for  in /home/ngo_b//rendu/proj/zappy/clientsrc/ia
+//
+// Made by benoit ngo
+// Login   <ngo_b@epitech.net>
+//
+// Started on  Tue Jun 21 13:14:28 2011 benoit ngo
+<<<<<<< .mine
+// Last update Sun Jul 10 20:17:55 2011 benoit ngo
+=======
+// Last update Sun Jul 10 19:21:47 2011 benoit ngo
+>>>>>>> .r205
+//
+
+#include "client.hh"
+#include <unistd.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <iostream>
+#include <stdlib.h>
+#include <string.h>
+
+#include <sys/time.h>
+#include <unistd.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+
+#include "epur_str.hh"
+#include "exept_connect.hpp"
+#include "exept_read.hpp"
+
+void		Client::watch(std::string & str)
+{
+  this->write("voir");
+  this->read(str);
+}
+
+void		Client::fill_command_to_buffer(std::string & s)
+{
+  int		nb_space = 0;
+  int		from = 0;
+
+  this->nb_command_send = 0;
+  this->nb_rec = 0;
+  for (int i = 0; i < s.size(); ++i)
+    {
+      if (s[i] == '\n')
+	{
+	  ++this->nb_command_send;
+	  ++nb_space;
+	  if (nb_space >= 1)
+	    {
+	      from = i + 1;
+	      break ;
+	    }
+	}
+      if (s[i] == 'v' && i + 4 < s.size() && s[i + 1] == 'o' && s[i + 2] == 'i')
+	{
+	  ++this->nb_command_send;
+	  from = i + 5;
+	  break ;
+	}
+      if (i + 10 < s.size() && s[i] == 'i' && s[i + 1] == 'n'
+	  && s[i + 2] == 'v')
+	{
+	  ++this->nb_command_send;
+	  from = i + 11;
+	  break;
+	}
+    }
+  if (from != 0)
+    {
+      this->_buffer_write = s.substr(from);
+      s = s.substr(0, from);
+    }
+}
+
+bool		Client::fd_isset_write()
+{
+  return (FD_ISSET(this->_socket, &(this->_champ_write)));
+}
+
+ssize_t xwrite(int fd, const void * buf, size_t c)
+{
+  return (write(fd, buf, c));
+}
+
+void		Client::write(const std::string & str)
+{
+  int		i = 50;
+  this->_buffer_write += str;
+<<<<<<< .mine
+  std::string	s(this->_buffer_write);
+  int		ret = 0;
+  if (s == "")
+    return ;
+  this->_buffer_write = "";
+  this->fill_command_to_buffer(s);
+  std::cout <<"Write To Server: " << s << std::endl << "================"<< std::endl;
+  ret = xwrite(this->_socket, s.c_str(), s.size());
+  if (ret < s.size())
+    this->_buffer_write = s.substr(ret)
+      + this->_buffer_write;
+=======
+  std::string	s(this->_buffer_write);
+  int		ret = 0;
+  if (s == "")
+    return ;
+  this->_buffer_write = "";
+  this->fill_command_to_buffer(s);
+  std::cout <<"IN WRITE" << s << std::endl << "================"<< std::endl;
+  ret = xwrite(this->_socket, s.c_str(), s.size());
+  if (ret < s.size())
+    this->_buffer_write = s.substr(ret)
+      + this->_buffer_write;
+>>>>>>> .r205
+}
+
+ssize_t xread(int fd, char * buf, size_t c)
+{
+  return (read(fd, buf, c));
+}
+
+ssize_t read(int fd, void *buf, size_t count);
+
+void		Client::read(std::string & s)
+{
+  int		ret = -1;
+
+  s = "";
+  if (FD_ISSET(this->_socket, &(this->_champ_read)))
+    {
+      char buf[1025];
+      do {
+	  memset(buf, '\0', 1025);
+	  if ((ret = xread(this->_socket, buf, 1024)) <= 0)
+	    {
+	      close(this->_socket);
+<<<<<<< .mine
+	      throw exept_read("erreur read");
+=======
+	      throw exept_read("erreur read");
+	      //exit (0);
+	      //return ;
+	      //fermer le client proprement;
+>>>>>>> .r205
+	    }
+      	  s += buf;
+      } while (buf[ret - 1] != '\n');
+      std::cout << "Receive: " << s << std::endl;
+      ++this->nb_rec;
+    }
+}
+
+bool		Client::do_select()
+{
+  FD_ZERO(&(this->_champ_write));
+  FD_SET(this->_socket, &(this->_champ_write));
+  FD_ZERO(&(this->_champ_read));
+  FD_SET(this->_socket, &(this->_champ_read));
+  if (select(this->_socket + 1, &(this->_champ_read),
+	     &(this->_champ_write), NULL, &this->_tv) >= 0)
+    return (true);
+  return (false);
+}
+
+Client::Client(const std::string & ip, int port,
+	       const std::string & teamName):
+  _pe(getprotobyname("TCP")),
+  _socket(socket(PF_INET, SOCK_STREAM, this->_pe->p_proto)), _ip(ip), //verifier retour
+  _teamName(teamName), _port(port), nb_command_send(0), nb_rec(0)
+{
+  this->_s.sin_family = AF_INET;
+  this->_s.sin_port = htons(port);
+  if ((this->_s.sin_addr.s_addr = inet_addr(ip.c_str())) == 0)
+    throw exept_connect("inet_addr error\n");
+
+  if ((connect(_socket, (const struct sockaddr *)&_s, sizeof(this->_s))) == -1)
+    {
+<<<<<<< .mine
+      close(this->_socket);
+      throw exept_connect("Connect error\n");
+=======
+      //std::cerr << "Connect error" << std::endl;
+      close(this->_socket); // verifier retour close
+      throw exept_connect("Connect error\n");
+      // throw a exept
+>>>>>>> .r205
+    }
+  FD_ZERO(&(this->_champ_read));
+  FD_ZERO(&(this->_champ_write));
+  FD_SET(this->_socket, &(this->_champ_read));
+  FD_SET(this->_socket, &(this->_champ_write));
+  this->_tv.tv_sec = 0;
+  this->_tv.tv_usec = 10;
+}
+
+Client::~Client()
+{
+  close(this->_socket);
+  //free(_pe);
+}
